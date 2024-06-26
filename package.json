@@ -1,0 +1,27 @@
+{
+  "name": "project-1",
+  "version": "1.0.0",
+  "main": "./out/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "dev": "node --loader ts-node/esm --enable-source-maps --env-file=.env index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^20.14.8",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "@sentry/node": "^8.11.0",
+    "@sentry/profiling-node": "^8.11.0",
+    "fastify": "^4.28.0",
+    "mongodb": "^6.7.0"
+  }
+}
