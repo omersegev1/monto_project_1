@@ -5,7 +5,7 @@ import {
     GetInvoiceSchema,
     GetInvoicesSchema,
     PutInvoiceSchema,
-    DeleteInvoiceSchema
+    DeleteInvoiceSchema, ScrapeInvoiceSchema
 } from '../invoiceSchemas.js';
 
 const getInvoicesRoute: RouteOptions = {
@@ -43,12 +43,20 @@ const deleteInvoiceRoute: RouteOptions = {
     schema: DeleteInvoiceSchema,
 };
 
+const scrapInvoiceRoute: RouteOptions = {
+    method: 'GET',
+    url: '/invoices/scrape',
+    handler: invoiceController.scrapInvoices,
+    schema: ScrapeInvoiceSchema,
+};
+
 const routes = [
     getInvoicesRoute,
     getInvoiceRoute,
     postInvoiceRoute,
     putInvoiceRoute,
-    deleteInvoiceRoute
+    deleteInvoiceRoute,
+    scrapInvoiceRoute
 ];
 
 export default routes;

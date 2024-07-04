@@ -16,7 +16,7 @@ routes.forEach(route => {
 
 app.get('/error', (req, res) => {
     throw new Error('TEST: Error occurred');
-})
+});
 
 const start = async (): Promise<void> => {
     try {

@@ -9,7 +9,10 @@ export const AddInvoiceSchema = {
             invoice_number: {type: 'string', maxLength: 100},
             po_number: {type: 'string', maxLength: 100},
             buyer: {type: 'string', maxLength: 100},
-            status: {type: 'string', enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled"]},
+            status: {
+                type: 'string',
+                enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+            },
             invoice_date: {type: 'string', format: 'date'},
             currency: {type: 'string', pattern: '^[A-Z]{3}$'},
             total: {type: 'number'},
@@ -27,7 +30,10 @@ export const AddInvoiceSchema = {
                 invoice_number: {type: 'string'},
                 po_number: {type: 'string'},
                 buyer: {type: 'string'},
-                status: {type: 'string', enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled"]},
+                status: {
+                    type: 'string',
+                    enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+                },
                 invoice_date: {type: 'string', format: 'date'},
                 currency: {type: 'string', pattern: '^[A-Z]{3}$'},
                 total: {type: 'number'}
@@ -56,7 +62,10 @@ export const PutInvoiceSchema = {
             invoice_number: {type: 'string', maxLength: 100},
             po_number: {type: 'string', maxLength: 100},
             buyer: {type: 'string', maxLength: 100},
-            status: {type: 'string', enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled"]},
+            status: {
+                type: 'string',
+                enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+            },
             invoice_date: {type: 'string', format: 'date'},
             currency: {type: 'string', pattern: '^[A-Z]{3}$'},
             total: {type: 'number'},
@@ -73,7 +82,10 @@ export const PutInvoiceSchema = {
                 invoice_number: {type: 'string'},
                 po_number: {type: 'string'},
                 buyer: {type: 'string'},
-                status: {type: 'string', enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled"]},
+                status: {
+                    type: 'string',
+                    enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+                },
                 invoice_date: {type: 'string', format: 'date'},
                 currency: {type: 'string', pattern: '^[A-Z]{3}$'},
                 total: {type: 'number'},
@@ -105,7 +117,10 @@ export const GetInvoiceSchema = {
                 invoice_number: {type: 'string'},
                 po_number: {type: 'string'},
                 buyer: {type: 'string'},
-                status: {type: 'string', enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled"]},
+                status: {
+                    type: 'string',
+                    enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+                },
                 invoice_date: {type: 'string', format: 'date'},
                 currency: {type: 'string', pattern: '^[A-Z]{3}$'},
                 total: {type: 'number'},
@@ -137,7 +152,10 @@ export const DeleteInvoiceSchema = {
                 invoice_number: {type: 'string'},
                 po_number: {type: 'string'},
                 buyer: {type: 'string'},
-                status: {type: 'string', enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled"]},
+                status: {
+                    type: 'string',
+                    enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+                },
                 invoice_date: {type: 'string', format: 'date'},
                 currency: {type: 'string', pattern: '^[A-Z]{3}$'},
                 total: {type: 'number'},
@@ -157,7 +175,10 @@ export const GetInvoicesSchema = {
             invoice_number: {type: 'string', maxLength: 100},
             po_number: {type: 'string', maxLength: 100},
             buyer: {type: 'string', maxLength: 100},
-            status: {type: 'string', enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled"]},
+            status: {
+                type: 'string',
+                enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+            },
             start_date: {type: 'string', format: 'date'},
             end_date: {type: 'string', format: 'date'},
             currency: {type: 'string', pattern: '^[A-Z]{3}$'},
@@ -178,9 +199,51 @@ export const GetInvoicesSchema = {
                     invoice_number: {type: 'string'},
                     po_number: {type: 'string'},
                     buyer: {type: 'string'},
-                    status: {type: 'string', enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled"]},
+                    status: {
+                        type: 'string',
+                        enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+                    },
                     invoice_date: {type: 'string', format: 'date'},
                     currency: {type: 'string', pattern: '^[A-Z]{3}$'},
+                    total: {type: 'number'}
+                }
+            }
+        }
+    }
+};
+
+export const ScrapeInvoiceSchema = {
+    description: 'Scrape invoices from Monto',
+    tags: ['invoices'],
+    summary: 'Scrapes invoices from Monto',
+    querystring: {
+        type: 'object',
+        properties: {
+            portal_name: {type: 'string', maxLength: 100},
+            status: {
+                type: 'string',
+                enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+            },
+            invoice_date: {type: 'string', format: 'date'},
+        },
+        additionalProperties: false
+    },
+    response: {
+        200: {
+            description: 'Successful response',
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    portal_name: {type: 'string'},
+                    buyer: {type: 'object'},
+                    invoice_number: {type: 'string'},
+                    monto_customer: {type: 'string'},
+                    status: {
+                        type: 'string',
+                        enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
+                    },
+                    invoice_date: {type: 'string', format: 'date'},
                     total: {type: 'number'}
                 }
             }
