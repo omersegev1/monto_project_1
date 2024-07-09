@@ -10,8 +10,6 @@ import {
 } from "../models/Invoice.js";
 
 export async function getAuthentication(credential: MontoCredential): Promise<MontoAuthentication> {
-
-
     const key = hashCode(credential.username + credential.password);
 
     const cached = await cacheGet(key);
@@ -62,7 +60,7 @@ export async function getInvoices(authentication: MontoAuthentication, filters?:
 
     const invoices = await response.json();
     return invoices.filter((invoice: MontoInvoice) => {
-        if (filters?.invoice_date && invoice.invoice_date !== filters.invoice_date) {
+        if (filters?.invoice_date && (new Date(invoice.invoice_date)).getTime() !== filters.invoice_date.getTime()) {
             return false;
         }
         if (filters?.portal_name && invoice.portal_name !== filters.portal_name) {
