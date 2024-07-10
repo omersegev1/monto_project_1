@@ -3,9 +3,9 @@ import {ObjectId} from 'mongodb';
 import {invoicesCollection} from '../utils/mongo.js';
 import {MontoInvoice, MontoInvoiceStatus} from "../models/Invoice.js";
 import * as scraper from '../utils/scraper.js';
-import {cacheGet, cacheSet} from "../utils/cache.js";
-import {hashCode} from "../utils/scraper.js";
 
+import {Cache} from "../utils/Cache.js";
+import {hashCode} from "../utils/scraper.js";
 
 export const getInvoices = async (req: FastifyRequest, reply: FastifyReply) => {
     const query: any = {};
@@ -88,40 +88,34 @@ export const deleteInvoice = async (req: FastifyRequest, reply: FastifyReply) =>
 
 export const scrapInvoices = async (req: FastifyRequest, reply: FastifyReply) => {
 
-    const query: any = {};
+    const cache = new Cache();
 
     const filters = req.query as {
-        invoice_date?: Date,
+        start_date?: Date,
+        end_date?: Date,
         portal_name?: string,
         status?: string
     }
 
-    Object.entries(filters).forEach(([key, value]) => {
-        if (value) {
-            query[key] = value;
-        }
-    });
-
     const MontoAuth = await scraper.getAuthentication({
-        rootUrl: process.env.ROOT_URL || '',
-        username: process.env.USER_NAME || '',
-        password: process.env.PASSWORD || ''
+        rootUrl: process.env.ROOT_URL!,
+        username: process.env.USER_NAME!,
+        password: process.env.PASSWORD!
     });
 
     const key = hashCode(MontoAuth.token + JSON.stringify(filters));
-    const invoicesFromCache = await cacheGet(key);
+    const invoicesFromCache = await cache.get(key);
     if (invoicesFromCache) {
-        console.log('getting cached invoices...');
         return reply.send(invoicesFromCache);
     }
 
-    const invoices = await scraper.getInvoices(MontoAuth, query);
+    const invoices = await scraper.getInvoices(MontoAuth, filters);
     for (const invoice of invoices) {
         invoice._id = new ObjectId(invoice._id);
         await invoicesCollection.findOneAndUpdate({_id: invoice._id}, {$set: invoice}, {upsert: true});
     }
 
-    cacheSet(key, invoices, 1000 * 60 * 5);
+    await cache.set(key, invoices);
 
     reply.send(invoices);
 }

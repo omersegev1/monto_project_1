@@ -1,6 +1,6 @@
 import Sentry from "./sentry.js";
 import puppeteer from 'puppeteer';
-import {cacheGet, cacheSet} from './cache.js';
+import {Cache} from "./Cache.js";
 import {
     InvoiceFilters,
     MontoAuthentication,
@@ -10,14 +10,14 @@ import {
 } from "../models/Invoice.js";
 
 export async function getAuthentication(credential: MontoCredential): Promise<MontoAuthentication> {
+
+    const cache = new Cache();
     const key = hashCode(credential.username + credential.password);
 
-    const cached = await cacheGet(key);
+    const cached = await cache.get(key);
     if (cached) {
-        console.log('getting cached token...')
         return cached;
     }
-    console.log('getting new token...');
 
     const browser = await puppeteer.launch({headless: true});
     const page = await browser.newPage();
@@ -27,9 +27,11 @@ export async function getAuthentication(credential: MontoCredential): Promise<Mo
     await page.waitForSelector('input[name="password"]').then((el) => el?.type(credential.password));
 
     await Promise.all([
-        page.waitForNavigation(),
+        page.waitForNavigation({waitUntil: 'networkidle2'}),
         page.click('button[type="submit"]')
     ]);
+
+    // throw new Error('TEST: Error occurred trying to get screenshot on sentry.');
 
     const cookies = await page.cookies();
     const token = cookies.find(cookie => cookie.name === 'appSession')?.value;
@@ -40,14 +42,11 @@ export async function getAuthentication(credential: MontoCredential): Promise<Mo
         token: token?.toString() || '',
     };
 
-    cacheSet(key, data, 1000 * 60 * 5);
-
+    await cache.set(key, data);
     return data;
 }
 
 export async function getInvoices(authentication: MontoAuthentication, filters?: InvoiceFilters): Promise<MontoInvoice[]> {
-
-    console.log('getting invoices...');
 
     const response = await fetch('https://backoffice.dev.montopay.com/api/monto/fetch_all_invoices?tab=new', {
         method: 'GET',
@@ -60,7 +59,12 @@ export async function getInvoices(authentication: MontoAuthentication, filters?:
 
     const invoices = await response.json();
     return invoices.filter((invoice: MontoInvoice) => {
-        if (filters?.invoice_date && (new Date(invoice.invoice_date)).getTime() !== filters.invoice_date.getTime()) {
+        const dateToCheck = new Date(invoice.invoice_date || invoice.created_time).getTime();
+
+        if (filters?.start_date && dateToCheck <= new Date(filters.start_date).getTime()) {
+            return false;
+        }
+        if (filters?.end_date && dateToCheck >= new Date(filters.end_date).getTime()) {
             return false;
         }
         if (filters?.portal_name && invoice.portal_name !== filters.portal_name) {

@@ -1,7 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { cacheSet, cacheGet } from "./src/utils/cache.js";
+import {Cache} from "./src/utils/Cache.js";
 import { getAuthentication, getInvoices } from "./src/utils/scraper.js";
+
+const cache = new Cache();
 
 const credentials = {
     rootUrl: process.env.ROOT_URL!,
@@ -15,17 +17,18 @@ describe("Cache Utility", () => {
     const ttl = 1000;
 
     it("Should set a cache key", () => {
-        assert.doesNotThrow(() => cacheSet(key, value, ttl));
+        assert.doesNotThrow(async () => await cache.set(key, value, ttl));
     });
 
-    it("Should retrieve a cache key", () => {
-        assert.deepStrictEqual(cacheGet(key), value);
+    it("Should retrieve a cache key", async () => {
+        const actual_val = await cache.get(key);
+        assert.deepStrictEqual(actual_val, value);
     });
 
     it("Should retrieve an expired cache key", async () => {
-        const cachePromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const value = cacheGet(key);
+        const cachePromise = new Promise((resolve) => {
+            setTimeout(async () => {
+                const value = await cache.get(key);
                 resolve(value);
             }, ttl);
         });
@@ -50,14 +53,15 @@ describe("Invoices Data Extractor", () => {
     it("Should get scraped filtered invoices", async () => {
         const authentication = await getAuthentication(credentials);
         const filters = {
-            invoice_date: new Date("2024-02-04")
+            start_date: new Date("2023-07-01"),
+            end_date: new Date("2023-07-01"),
         };
         const invoices = await getInvoices(authentication, filters);
         assert(invoices.length > 0);
     });
 
     it("Should get scraped invoices from API", async () => {
-        const url = "http://localhost:3000/invoices/scrape";
+        const url = "http://localhost:3000/invoices/scrape?end_date=2023-07-01";
         const options = {
             method: "GET",
             headers: {

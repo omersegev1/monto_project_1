@@ -14,15 +14,17 @@ routes.forEach(route => {
     });
 });
 
-app.get('/error', (req, res) => {
+app.get('/error', () => {
     throw new Error('TEST: Error occurred');
 });
 
 const start = async (): Promise<void> => {
     try {
+        const port = parseInt(process.env.PORT || '3000', 10);
         await app.ready();
-        await app.listen({port: 3000});
+        await app.listen({port});
         await connectToDatabase();
+        console.log(`Server listening on port ${port}`);
     } catch (err) {
         app.log.error(err);
         process.exit(1);

@@ -16,11 +16,17 @@ export interface MontoInvoice {
     portal_name: string;
     invoice_number: string;
     po_number?: string;
-    buyer: string;
+    buyer: Buyer;
     status: MontoInvoiceStatus;
     invoice_date: Date;
+    created_time: Date;
     currency: string;
     total: number;
+}
+
+interface Buyer {
+    mapped_value: string;
+    airtable_id: string;
 }
 
 export interface MontoCredential {
@@ -34,7 +40,8 @@ export interface MontoAuthentication {
 }
 
 export interface InvoiceFilters {
-    invoice_date?: Date;
+    start_date?: Date;
+    end_date?: Date;
     portal_name?: string;
     status?: string;
 }

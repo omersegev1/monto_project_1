@@ -224,7 +224,8 @@ export const ScrapeInvoiceSchema = {
                 type: 'string',
                 enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
             },
-            invoice_date: {type: 'string', format: 'date'},
+            start_date: {type: 'string', format: 'date'},
+            end_date: {type: 'string', format: 'date'},
         },
         additionalProperties: false
     },
@@ -236,7 +237,13 @@ export const ScrapeInvoiceSchema = {
                 type: 'object',
                 properties: {
                     portal_name: {type: 'string'},
-                    buyer: {type: 'object'},
+                    buyer: {
+                        type: 'object',
+                        properties: {
+                            mapped_value: {type: 'string'},
+                            airtable_id: {type: 'string'}
+                        }
+                    },
                     invoice_number: {type: 'string'},
                     monto_customer: {type: 'string'},
                     status: {
@@ -244,6 +251,7 @@ export const ScrapeInvoiceSchema = {
                         enum: ["Approved", "Pending Approval", "Paid", "Rejected", "Canceled", 'in_process']
                     },
                     invoice_date: {type: 'string', format: 'date'},
+                    created_time: {type: 'string', format: 'date'},
                     total: {type: 'number'}
                 }
             }
