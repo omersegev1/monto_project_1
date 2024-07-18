@@ -1,4 +1,4 @@
-import { describe, it } from "node:test";
+import {after, before, describe, it} from "node:test";
 import assert from "node:assert/strict";
 import {Cache} from "./src/utils/Cache.js";
 import { getAuthentication, getInvoices } from "./src/utils/scraper.js";
@@ -11,10 +11,14 @@ const credentials = {
     password: process.env.PASSWORD!,
 };
 
-describe("Cache Utility", () => {
+describe("Cache Utility", async () => {
     const key = "test_key";
     const value = { foo: "bar" };
     const ttl = 1000;
+
+    before(async () => {
+        await cache.init();
+    });
 
     it("Should set a cache key", () => {
         assert.doesNotThrow(async () => await cache.set(key, value, ttl));
@@ -72,5 +76,8 @@ describe("Invoices Data Extractor", () => {
         const data = await response.json();
 
         assert(data.length > 0);
+    });
+    after(async () => {
+        await cache.clearCacheInterval();
     });
 });

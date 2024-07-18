@@ -4,9 +4,6 @@ import {invoicesCollection} from '../utils/mongo.js';
 import {MontoInvoice, MontoInvoiceStatus} from "../models/Invoice.js";
 import * as scraper from '../utils/scraper.js';
 
-import {Cache} from "../utils/Cache.js";
-import {hashCode} from "../utils/scraper.js";
-
 export const getInvoices = async (req: FastifyRequest, reply: FastifyReply) => {
     const query: any = {};
     const filters = req.query as {
@@ -88,7 +85,7 @@ export const deleteInvoice = async (req: FastifyRequest, reply: FastifyReply) =>
 
 export const scrapInvoices = async (req: FastifyRequest, reply: FastifyReply) => {
 
-    const cache = new Cache();
+    const {cache}: any = req.server;
 
     const filters = req.query as {
         start_date?: Date,
@@ -103,7 +100,7 @@ export const scrapInvoices = async (req: FastifyRequest, reply: FastifyReply) =>
         password: process.env.PASSWORD!
     });
 
-    const key = hashCode(MontoAuth.token + JSON.stringify(filters));
+    const key = scraper.hashCode(MontoAuth.token + JSON.stringify(filters));
     const invoicesFromCache = await cache.get(key);
     if (invoicesFromCache) {
         return reply.send(invoicesFromCache);
